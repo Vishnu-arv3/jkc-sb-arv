@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload as UploadIcon, Camera, X, CheckCircle2, Loader2 } from "lucide-react";
+import { Upload as UploadIcon, Camera, X, CheckCircle2, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
+import CameraCapture from "@/components/CameraCapture";
 
 const stages = [
   { label: "Analyzing Face", desc: "Detecting facial features..." },
@@ -13,6 +14,7 @@ const stages = [
 
 const UploadPage = () => {
   const [preview, setPreview] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState(0);
   const [completed, setCompleted] = useState(false);
@@ -36,7 +38,6 @@ const UploadPage = () => {
     setCurrentStage(0);
     setCompleted(false);
 
-    // Simulate stages
     let stage = 0;
     const interval = setInterval(() => {
       stage++;
@@ -54,6 +55,7 @@ const UploadPage = () => {
 
   const reset = () => {
     setPreview(null);
+    setShowCamera(false);
     setProcessing(false);
     setCurrentStage(0);
     setCompleted(false);
@@ -64,24 +66,43 @@ const UploadPage = () => {
       <div className="animate-fade-in space-y-6">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Create Personalized Video</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Upload your selfie to begin your home-building journey</p>
+          <p className="mt-1 text-sm text-muted-foreground">Upload or take a selfie to begin your home-building journey</p>
         </div>
 
         <div className="mx-auto max-w-2xl">
-          {/* Upload Zone */}
-          {!preview && !processing && !completed && (
-            <div
-              onDrop={handleDrop}
-              onDragOver={(e) => e.preventDefault()}
-              onClick={() => fileRef.current?.click()}
-              className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-card p-16 text-center transition-colors hover:border-primary/50 hover:bg-muted/50"
-            >
-              <div className="mb-4 rounded-full bg-primary/10 p-4">
-                <Camera className="h-8 w-8 text-primary" />
-              </div>
-              <p className="font-display text-lg font-semibold text-foreground">Upload Your Selfie</p>
-              <p className="mt-1 text-sm text-muted-foreground">Drag & drop or click to browse</p>
-              <p className="mt-3 text-xs text-muted-foreground">JPG, PNG • Max 10MB • Clear face visible</p>
+          {/* Upload / Camera selection zone */}
+          {!preview && !showCamera && !processing && !completed && (
+            <div className="space-y-4">
+              {/* Take Selfie */}
+              <button
+                onClick={() => setShowCamera(true)}
+                className="flex w-full cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-border bg-card p-8 text-left transition-colors hover:border-primary/50 hover:bg-muted/50"
+              >
+                <div className="rounded-full bg-primary/10 p-4">
+                  <Camera className="h-8 w-8 text-primary" />
+                </div>
+                <div>
+                  <p className="font-display text-lg font-semibold text-foreground">Take a Selfie</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">Use your camera to capture a photo</p>
+                </div>
+              </button>
+
+              {/* Upload File */}
+              <button
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                onClick={() => fileRef.current?.click()}
+                className="flex w-full cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-border bg-card p-8 text-left transition-colors hover:border-primary/50 hover:bg-muted/50"
+              >
+                <div className="rounded-full bg-accent/10 p-4">
+                  <ImageIcon className="h-8 w-8 text-accent" />
+                </div>
+                <div>
+                  <p className="font-display text-lg font-semibold text-foreground">Upload Photo</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">Drag & drop or click to browse • JPG, PNG • Max 10MB</p>
+                </div>
+              </button>
+
               <input
                 ref={fileRef}
                 type="file"
@@ -89,7 +110,23 @@ const UploadPage = () => {
                 className="hidden"
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
+
+              {/* Privacy note */}
+              <div className="flex items-start gap-2 rounded-lg bg-muted p-3">
+                <span className="text-sm">🔒</span>
+                <p className="text-xs text-muted-foreground">
+                  Your photo is encrypted and securely processed. It will be automatically deleted after video generation.
+                </p>
+              </div>
             </div>
+          )}
+
+          {/* Camera view */}
+          {showCamera && !preview && (
+            <CameraCapture
+              onCapture={(dataUrl) => { setPreview(dataUrl); setShowCamera(false); }}
+              onClose={() => setShowCamera(false)}
+            />
           )}
 
           {/* Preview */}
@@ -146,7 +183,6 @@ const UploadPage = () => {
                   </div>
                 ))}
               </div>
-              {/* Progress bar */}
               <div className="mt-6 h-2 overflow-hidden rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-primary transition-all duration-500"
@@ -166,7 +202,6 @@ const UploadPage = () => {
                 <h2 className="font-display text-xl font-bold text-foreground">Video Ready!</h2>
                 <p className="mt-1 text-sm text-muted-foreground">Your personalized home-building journey video has been generated.</p>
 
-                {/* Placeholder video */}
                 <div className="mx-auto mt-6 aspect-video max-w-lg overflow-hidden rounded-lg bg-muted">
                   <div className="flex h-full items-center justify-center">
                     <p className="text-sm text-muted-foreground">🎬 Video Preview</p>

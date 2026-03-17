@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,11 +19,14 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        await login(email, password);
+        const { error } = await login(email, password);
+        if (error) { toast.error(error); return; }
+        navigate("/dashboard");
       } else {
-        await signup(name, email, password);
+        const { error } = await signup(name, email, password);
+        if (error) { toast.error(error); return; }
+        toast.success("Account created! Check your email to confirm.");
       }
-      navigate("/dashboard");
     } finally {
       setLoading(false);
     }
@@ -76,6 +80,7 @@ const AuthPage = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
+                minLength={6}
               />
             </div>
             <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
