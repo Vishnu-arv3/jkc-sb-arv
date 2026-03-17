@@ -1,13 +1,32 @@
-import { Moon, Sun, User, Mail, Shield } from "lucide-react";
+import { useState } from "react";
+import { Moon, Sun, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const [displayName, setDisplayName] = useState(profile?.display_name || "");
+  const [phone, setPhone] = useState(profile?.phone || "");
+  const [saving, setSaving] = useState(false);
+
+  const saveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ display_name: displayName, phone })
+      .eq("user_id", user.id);
+    setSaving(false);
+    if (error) { toast.error("Failed to save"); return; }
+    toast.success("Profile updated");
+    await refreshProfile();
+  };
 
   return (
     <AppLayout>
@@ -21,11 +40,11 @@ const ProfilePage = () => {
           {/* Avatar & Info */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <div className="flex items-center gap-5">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground font-display">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary font-display text-xl font-bold text-primary-foreground">
+                {(profile?.display_name || user?.email || "U").charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="font-display text-lg font-bold text-foreground">{user?.name}</h2>
+                <h2 className="font-display text-lg font-bold text-foreground">{profile?.display_name || user?.email?.split("@")[0]}</h2>
                 <p className="text-sm text-muted-foreground">{user?.email}</p>
               </div>
             </div>
@@ -38,18 +57,20 @@ const ProfilePage = () => {
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Full Name</label>
-                <Input defaultValue={user?.name} />
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Display Name</label>
+                <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
-                <Input defaultValue={user?.email} type="email" />
+                <Input value={user?.email || ""} disabled />
               </div>
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Phone</label>
-                <Input placeholder="+91 XXXXX XXXXX" />
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 XXXXX XXXXX" />
               </div>
-              <Button variant="hero">Save Changes</Button>
+              <Button variant="hero" onClick={saveProfile} disabled={saving}>
+                {saving ? "Saving..." : "Save Changes"}
+              </Button>
             </div>
           </div>
 
@@ -77,30 +98,11 @@ const ProfilePage = () => {
           {/* Security */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="mb-4 flex items-center gap-2 font-display text-base font-semibold text-foreground">
-              <Shield className="h-4 w-4" /> Security
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">Current Password</label>
-                <Input type="password" placeholder="••••••••" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-foreground">New Password</label>
-                <Input type="password" placeholder="••••••••" />
-              </div>
-              <Button variant="outline">Update Password</Button>
-            </div>
-          </div>
-
-          {/* Data */}
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="mb-4 flex items-center gap-2 font-display text-base font-semibold text-foreground">
-              <Mail className="h-4 w-4" /> Data & Privacy
+              <Shield className="h-4 w-4" /> Data & Privacy
             </h3>
             <p className="text-sm text-muted-foreground">
               Your selfies are securely processed and automatically deleted after video generation. We do not store or share your biometric data.
             </p>
-            <Button variant="destructive" size="sm" className="mt-4">Delete Account</Button>
           </div>
         </div>
       </div>
