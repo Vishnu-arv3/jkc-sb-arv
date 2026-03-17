@@ -1,0 +1,106 @@
+import { useNavigate } from "react-router-dom";
+import { Upload, Film, TrendingUp, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import AppLayout from "@/components/AppLayout";
+
+const stats = [
+  { label: "Videos Created", value: "3", icon: Film, color: "text-primary" },
+  { label: "Total Views", value: "127", icon: TrendingUp, color: "text-accent" },
+  { label: "Avg. Generation", value: "3.2m", icon: Clock, color: "text-warning" },
+  { label: "Uploads", value: "5", icon: Upload, color: "text-secondary" },
+];
+
+const recentVideos = [
+  { id: 1, title: "Dream Home Journey", date: "Mar 15, 2026", status: "completed" as const },
+  { id: 2, title: "Foundation to Finish", date: "Mar 12, 2026", status: "completed" as const },
+  { id: 3, title: "My Home Story", date: "Mar 10, 2026", status: "processing" as const },
+];
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  return (
+    <AppLayout>
+      <div className="animate-fade-in space-y-8">
+        {/* Welcome */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-foreground">
+              Welcome back, {user?.name || "User"}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Create personalized home-building journey videos
+            </p>
+          </div>
+          <Button variant="hero" size="lg" onClick={() => navigate("/upload")}>
+            <Upload className="mr-2 h-4 w-4" />
+            Create New Video
+          </Button>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map(({ label, value, icon: Icon, color }) => (
+            <div key={label} className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">{label}</p>
+                  <p className="mt-1 font-display text-2xl font-bold text-foreground">{value}</p>
+                </div>
+                <div className={`rounded-lg bg-muted p-2.5 ${color}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA Card */}
+        <div className="relative overflow-hidden rounded-xl border border-border bg-card p-8 shadow-sm">
+          <div className="relative z-10">
+            <h2 className="font-display text-xl font-bold text-foreground">
+              Start Your Home-Building Journey
+            </h2>
+            <p className="mt-2 max-w-lg text-sm text-muted-foreground">
+              Upload your selfie and watch as AI creates a personalized video of your dream home being built from foundation to finish.
+            </p>
+            <Button variant="hero" className="mt-4" onClick={() => navigate("/upload")}>
+              Upload Selfie & Generate
+            </Button>
+          </div>
+          <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10" />
+          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-accent/10" />
+        </div>
+
+        {/* Recent Videos */}
+        <div>
+          <h2 className="mb-4 font-display text-lg font-bold text-foreground">Recent Videos</h2>
+          <div className="space-y-3">
+            {recentVideos.map((video) => (
+              <div key={video.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-20 items-center justify-center rounded-lg bg-muted">
+                    <Film className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">{video.title}</p>
+                    <p className="text-xs text-muted-foreground">{video.date}</p>
+                  </div>
+                </div>
+                <span className={`rounded-md px-2.5 py-1 text-xs font-medium ${
+                  video.status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+                }`}>
+                  {video.status === "completed" ? "Completed" : "Processing"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+};
+
+export default Dashboard;
