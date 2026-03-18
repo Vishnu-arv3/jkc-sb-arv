@@ -130,7 +130,7 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="flex items-center gap-3">
-                <Facebook className="h-5 w-5 text-blue-600" />
+                <Facebook className="h-5 w-5 text-secondary-foreground" />
                 <Input
                   value={facebook}
                   onChange={(e) => setFacebook(e.target.value)}
