@@ -112,7 +112,7 @@ const ProfilePage = () => {
             </p>
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Instagram className="h-5 w-5 text-pink-500" />
+                <Instagram className="h-5 w-5 text-primary" />
                 <Input
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value)}
