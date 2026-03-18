@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Moon, Sun, User, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Moon, Sun, User, Shield, Share2, Instagram, Twitter, Facebook } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,14 +13,45 @@ const ProfilePage = () => {
   const { theme, toggleTheme } = useTheme();
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
+  const [instagram, setInstagram] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [facebook, setFacebook] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Load social profiles
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("profiles")
+      .select("social_instagram, social_twitter, social_facebook")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setInstagram(data.social_instagram || "");
+          setTwitter(data.social_twitter || "");
+          setFacebook(data.social_facebook || "");
+        }
+      });
+  }, [user]);
+
+  useEffect(() => {
+    setDisplayName(profile?.display_name || "");
+    setPhone(profile?.phone || "");
+  }, [profile]);
 
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ display_name: displayName, phone })
+      .update({
+        display_name: displayName,
+        phone,
+        social_instagram: instagram || null,
+        social_twitter: twitter || null,
+        social_facebook: facebook || null,
+      })
       .eq("user_id", user.id);
     setSaving(false);
     if (error) { toast.error("Failed to save"); return; }
@@ -68,11 +99,52 @@ const ProfilePage = () => {
                 <label className="mb-1.5 block text-sm font-medium text-foreground">Phone</label>
                 <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 XXXXX XXXXX" />
               </div>
-              <Button variant="hero" onClick={saveProfile} disabled={saving}>
-                {saving ? "Saving..." : "Save Changes"}
-              </Button>
             </div>
           </div>
+
+          {/* Social Media Profiles */}
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h3 className="mb-4 flex items-center gap-2 font-display text-base font-semibold text-foreground">
+              <Share2 className="h-4 w-4" /> Social Media Profiles
+            </h3>
+            <p className="mb-4 text-xs text-muted-foreground">
+              Link your social media accounts for direct posting when sharing videos with #JKCement hashtags.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Instagram className="h-5 w-5 text-pink-500" />
+                <Input
+                  value={instagram}
+                  onChange={(e) => setInstagram(e.target.value)}
+                  placeholder="@your_instagram_handle"
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Twitter className="h-5 w-5 text-sky-500" />
+                <Input
+                  value={twitter}
+                  onChange={(e) => setTwitter(e.target.value)}
+                  placeholder="@your_twitter_handle"
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <Facebook className="h-5 w-5 text-blue-600" />
+                <Input
+                  value={facebook}
+                  onChange={(e) => setFacebook(e.target.value)}
+                  placeholder="Your Facebook profile URL"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Button */}
+          <Button variant="hero" onClick={saveProfile} disabled={saving} className="w-full">
+            {saving ? "Saving..." : "Save All Changes"}
+          </Button>
 
           {/* Appearance */}
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">

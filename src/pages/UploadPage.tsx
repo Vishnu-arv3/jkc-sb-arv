@@ -3,6 +3,13 @@ import { Upload as UploadIcon, Camera, X, CheckCircle2, Loader2, ImageIcon } fro
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/AppLayout";
 import CameraCapture from "@/components/CameraCapture";
+import QualitySelector from "@/components/QualitySelector";
+import VideoPlayer from "@/components/VideoPlayer";
+import ShareDialog from "@/components/ShareDialog";
+import DownloadDialog from "@/components/DownloadDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const stages = [
   { label: "Analyzing Face", desc: "Detecting facial features..." },
@@ -13,11 +20,16 @@ const stages = [
 ];
 
 const UploadPage = () => {
+  const { user } = useAuth();
   const [preview, setPreview] = useState<string | null>(null);
   const [showCamera, setShowCamera] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState(0);
   const [completed, setCompleted] = useState(false);
+  const [quality, setQuality] = useState<"sd" | "hd">("hd");
+  const [shareOpen, setShareOpen] = useState(false);
+  const [downloadOpen, setDownloadOpen] = useState(false);
+  const [generatedVideoId, setGeneratedVideoId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback((file: File) => {
@@ -33,17 +45,36 @@ const UploadPage = () => {
     if (file) handleFile(file);
   };
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setProcessing(true);
     setCurrentStage(0);
     setCompleted(false);
 
+    // Save video record to DB
+    let videoId: string | null = null;
+    if (user) {
+      const { data } = await supabase
+        .from("videos")
+        .insert({ user_id: user.id, title: "My Home Journey", status: "processing" })
+        .select("id")
+        .single();
+      videoId = data?.id ?? null;
+      setGeneratedVideoId(videoId);
+    }
+
     let stage = 0;
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       stage++;
       if (stage >= stages.length) {
         clearInterval(interval);
-        setTimeout(() => {
+        setTimeout(async () => {
+          // Mark completed in DB
+          if (videoId && user) {
+            await supabase
+              .from("videos")
+              .update({ status: "completed", duration: quality === "hd" ? "2:30" : "2:00" })
+              .eq("id", videoId);
+          }
           setProcessing(false);
           setCompleted(true);
         }, 1500);
@@ -59,7 +90,17 @@ const UploadPage = () => {
     setProcessing(false);
     setCurrentStage(0);
     setCompleted(false);
+    setGeneratedVideoId(null);
   };
+
+  const handleDownload = () => {
+    toast.success("Video download started!");
+    setDownloadOpen(false);
+  };
+
+  const shareUrl = generatedVideoId
+    ? `${window.location.origin}/video/${generatedVideoId}`
+    : window.location.href;
 
   return (
     <AppLayout>
@@ -73,7 +114,6 @@ const UploadPage = () => {
           {/* Upload / Camera selection zone */}
           {!preview && !showCamera && !processing && !completed && (
             <div className="space-y-4">
-              {/* Take Selfie */}
               <button
                 onClick={() => setShowCamera(true)}
                 className="flex w-full cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-border bg-card p-8 text-left transition-colors hover:border-primary/50 hover:bg-muted/50"
@@ -87,7 +127,6 @@ const UploadPage = () => {
                 </div>
               </button>
 
-              {/* Upload File */}
               <button
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
@@ -111,7 +150,6 @@ const UploadPage = () => {
                 onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
               />
 
-              {/* Privacy note */}
               <div className="flex items-start gap-2 rounded-lg bg-muted p-3">
                 <span className="text-sm">🔒</span>
                 <p className="text-xs text-muted-foreground">
@@ -129,7 +167,7 @@ const UploadPage = () => {
             />
           )}
 
-          {/* Preview */}
+          {/* Preview + Quality */}
           {preview && !processing && !completed && (
             <div className="space-y-4">
               <div className="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm">
@@ -141,13 +179,16 @@ const UploadPage = () => {
                   <X className="h-4 w-4" />
                 </button>
               </div>
+
+              <QualitySelector value={quality} onChange={setQuality} />
+
               <div className="flex gap-3">
                 <Button variant="outline" className="flex-1" onClick={reset}>
                   Choose Another
                 </Button>
                 <Button variant="hero" className="flex-1" onClick={handleGenerate}>
                   <UploadIcon className="mr-2 h-4 w-4" />
-                  Generate Video
+                  Generate {quality.toUpperCase()} Video
                 </Button>
               </div>
             </div>
@@ -158,8 +199,8 @@ const UploadPage = () => {
             <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
               <div className="mb-6 text-center">
                 <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-primary" />
-                <p className="font-display text-lg font-bold text-foreground">Building Your Video</p>
-                <p className="mt-1 text-sm text-muted-foreground">This may take 2-5 minutes</p>
+                <p className="font-display text-lg font-bold text-foreground">Building Your {quality.toUpperCase()} Video</p>
+                <p className="mt-1 text-sm text-muted-foreground">This may take {quality === "hd" ? "3-5" : "2-3"} minutes</p>
               </div>
               <div className="space-y-3">
                 {stages.map((stage, i) => (
@@ -195,27 +236,41 @@ const UploadPage = () => {
           {/* Completed */}
           {completed && (
             <div className="space-y-4">
-              <div className="rounded-xl border border-border bg-card p-8 text-center shadow-sm">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-                  <CheckCircle2 className="h-8 w-8 text-success" />
-                </div>
-                <h2 className="font-display text-xl font-bold text-foreground">Video Ready!</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Your personalized home-building journey video has been generated.</p>
-
-                <div className="mx-auto mt-6 aspect-video max-w-lg overflow-hidden rounded-lg bg-muted">
-                  <div className="flex h-full items-center justify-center">
-                    <p className="text-sm text-muted-foreground">🎬 Video Preview</p>
+              <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                <div className="mb-4 text-center">
+                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-success/10">
+                    <CheckCircle2 className="h-7 w-7 text-success" />
                   </div>
+                  <h2 className="font-display text-xl font-bold text-foreground">Video Ready!</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">Your personalized {quality.toUpperCase()} home-building journey video has been generated.</p>
                 </div>
 
-                <div className="mt-6 flex justify-center gap-3">
-                  <Button variant="hero">Download Video</Button>
-                  <Button variant="outline">Share</Button>
+                <VideoPlayer />
+
+                <div className="mt-4 flex justify-center gap-3">
+                  <Button variant="hero" onClick={() => setDownloadOpen(true)}>
+                    Download Video
+                  </Button>
+                  <Button variant="outline" onClick={() => setShareOpen(true)}>
+                    Share
+                  </Button>
                 </div>
               </div>
               <Button variant="ghost" className="w-full" onClick={reset}>
                 Create Another Video
               </Button>
+
+              <ShareDialog
+                open={shareOpen}
+                onOpenChange={setShareOpen}
+                shareUrl={shareUrl}
+              />
+              <DownloadDialog
+                open={downloadOpen}
+                onOpenChange={setDownloadOpen}
+                onConfirm={handleDownload}
+                quality={quality.toUpperCase()}
+              />
             </div>
           )}
         </div>
