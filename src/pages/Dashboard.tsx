@@ -4,6 +4,7 @@ import { Upload, Film, TrendingUp, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/AppLayout";
+import TutorialOverlay from "@/components/TutorialOverlay";
 import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
@@ -11,6 +12,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [videoCount, setVideoCount] = useState(0);
   const [recentVideos, setRecentVideos] = useState<any[]>([]);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -23,9 +25,29 @@ const Dashboard = () => {
         .limit(5);
       setVideoCount(count ?? 0);
       setRecentVideos(data ?? []);
+
+      // Check if user has seen tutorial
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("has_seen_tutorial")
+        .eq("user_id", user.id)
+        .single();
+      if (profileData && !profileData.has_seen_tutorial) {
+        setShowTutorial(true);
+      }
     };
     load();
   }, [user]);
+
+  const dismissTutorial = async () => {
+    setShowTutorial(false);
+    if (user) {
+      await supabase
+        .from("profiles")
+        .update({ has_seen_tutorial: true })
+        .eq("user_id", user.id);
+    }
+  };
 
   const stats = [
     { label: "Videos Created", value: String(videoCount), icon: Film, color: "text-primary" },
@@ -36,6 +58,8 @@ const Dashboard = () => {
 
   return (
     <AppLayout>
+      {showTutorial && <TutorialOverlay onComplete={dismissTutorial} />}
+
       <div className="animate-fade-in space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

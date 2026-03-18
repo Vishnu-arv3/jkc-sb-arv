@@ -19,8 +19,12 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          has_seen_tutorial: boolean
           id: string
           phone: string | null
+          social_facebook: string | null
+          social_instagram: string | null
+          social_twitter: string | null
           updated_at: string
           user_id: string
         }
@@ -28,8 +32,12 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          has_seen_tutorial?: boolean
           id?: string
           phone?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_twitter?: string | null
           updated_at?: string
           user_id: string
         }
@@ -37,8 +45,12 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          has_seen_tutorial?: boolean
           id?: string
           phone?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_twitter?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -50,33 +62,39 @@ export type Database = {
           duration: string | null
           id: string
           selfie_url: string | null
+          share_token: string | null
           status: string
           title: string
           updated_at: string
           user_id: string
           video_url: string | null
+          visibility: string
         }
         Insert: {
           created_at?: string
           duration?: string | null
           id?: string
           selfie_url?: string | null
+          share_token?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id: string
           video_url?: string | null
+          visibility?: string
         }
         Update: {
           created_at?: string
           duration?: string | null
           id?: string
           selfie_url?: string | null
+          share_token?: string | null
           status?: string
           title?: string
           updated_at?: string
           user_id?: string
           video_url?: string | null
+          visibility?: string
         }
         Relationships: []
       }
