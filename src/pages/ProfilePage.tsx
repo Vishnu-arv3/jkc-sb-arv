@@ -121,7 +121,7 @@ const ProfilePage = () => {
                 />
               </div>
               <div className="flex items-center gap-3">
-                <Twitter className="h-5 w-5 text-sky-500" />
+                <Twitter className="h-5 w-5 text-accent" />
                 <Input
                   value={twitter}
                   onChange={(e) => setTwitter(e.target.value)}
