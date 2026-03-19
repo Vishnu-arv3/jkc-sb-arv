@@ -20,11 +20,9 @@ const AppSidebar = () => {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
-        <img src={jkLogo} alt="JKCement" className="h-8 w-auto" />
-        <div className="ml-1">
-          <p className="text-xs font-medium text-sidebar-muted">Video Studio</p>
-        </div>
+      <div className="flex h-20 flex-col items-center justify-center gap-1 border-b border-sidebar-border px-5">
+        <img src={jkLogo} alt="JKCement" className="h-10 w-auto" />
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted">Video Studio</p>
       </div>
 
       {/* Navigation */}

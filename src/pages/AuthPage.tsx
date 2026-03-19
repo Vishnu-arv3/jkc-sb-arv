@@ -53,7 +53,8 @@ const AuthPage = () => {
       <div className="relative w-full max-w-md animate-fade-in">
         {/* Header */}
         <div className="mb-8 text-center">
-          <img src={jkLogo} alt="JKCement" className="mx-auto mb-4 h-12 w-auto" />
+          <img src={jkLogo} alt="JKCement" className="mx-auto mb-2 h-12 w-auto" />
+          <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Video Studio</p>
           <h1 className="font-display text-2xl font-bold text-foreground">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h1>
