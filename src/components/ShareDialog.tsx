@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, Twitter, Facebook, Instagram } from "lucide-react";
+import { Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
