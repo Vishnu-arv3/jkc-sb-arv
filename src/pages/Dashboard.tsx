@@ -26,7 +26,6 @@ const Dashboard = () => {
       setVideoCount(count ?? 0);
       setRecentVideos(data ?? []);
 
-      // Check if user has seen tutorial
       const { data: profileData } = await supabase
         .from("profiles")
         .select("has_seen_tutorial")
@@ -51,9 +50,9 @@ const Dashboard = () => {
 
   const stats = [
     { label: "Videos Created", value: String(videoCount), icon: Film, color: "text-primary" },
-    { label: "Total Views", value: "—", icon: TrendingUp, color: "text-accent" },
+    { label: "Total Views", value: "—", icon: TrendingUp, color: "text-secondary" },
     { label: "Avg. Generation", value: "~3m", icon: Clock, color: "text-warning" },
-    { label: "Uploads", value: String(videoCount), icon: Upload, color: "text-secondary-foreground" },
+    { label: "Uploads", value: String(videoCount), icon: Upload, color: "text-muted-foreground" },
   ];
 
   return (
@@ -77,13 +76,13 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {stats.map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
+            <div key={label} className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-muted-foreground sm:text-sm">{label}</p>
                   <p className="mt-1 font-display text-2xl font-bold text-foreground">{value}</p>
                 </div>
-                <div className={`rounded-lg bg-muted p-2.5 ${color}`}>
+                <div className={`rounded-xl bg-muted p-2.5 ${color}`}>
                   <Icon className="h-5 w-5" />
                 </div>
               </div>
@@ -92,7 +91,7 @@ const Dashboard = () => {
         </div>
 
         {/* CTA */}
-        <div className="relative overflow-hidden rounded-xl border border-border bg-card p-8 shadow-sm">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 shadow-sm">
           <div className="relative z-10">
             <h2 className="font-display text-xl font-bold text-foreground">Start Your Home-Building Journey</h2>
             <p className="mt-2 max-w-lg text-sm text-muted-foreground">
@@ -102,8 +101,8 @@ const Dashboard = () => {
               Upload Selfie & Generate
             </Button>
           </div>
-          <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/10" />
-          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-accent/10" />
+          <div className="absolute -right-4 -top-4 h-32 w-32 rounded-full bg-primary/8" />
+          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-secondary/8" />
         </div>
 
         {/* Recent Videos */}
@@ -114,9 +113,9 @@ const Dashboard = () => {
           ) : (
             <div className="space-y-3">
               {recentVideos.map((video) => (
-                <div key={video.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4 shadow-sm">
+                <div key={video.id} className="flex items-center justify-between rounded-2xl border border-border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-20 items-center justify-center rounded-lg bg-muted">
+                    <div className="flex h-12 w-20 items-center justify-center rounded-xl bg-muted">
                       <Film className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <div>
@@ -124,7 +123,7 @@ const Dashboard = () => {
                       <p className="text-xs text-muted-foreground">{new Date(video.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <span className={`rounded-md px-2.5 py-1 text-xs font-medium ${
+                  <span className={`rounded-lg px-2.5 py-1 text-xs font-medium ${
                     video.status === "completed" ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
                   }`}>
                     {video.status === "completed" ? "Completed" : "Processing"}
