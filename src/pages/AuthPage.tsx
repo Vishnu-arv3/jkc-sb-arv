@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
+import jkLogo from "@/assets/jkcement_logo.png";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -41,28 +42,33 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-md animate-fade-in">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
+      {/* Decorative background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-primary/5" />
+        <div className="absolute -bottom-20 -right-20 h-72 w-72 rounded-full bg-secondary/5" />
+        <div className="absolute left-1/2 top-1/4 h-48 w-48 -translate-x-1/2 rounded-full bg-primary/3" />
+      </div>
+
+      <div className="relative w-full max-w-md animate-fade-in">
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary font-display text-xl font-bold text-primary-foreground shadow-lg">
-            JK
-          </div>
+          <img src={jkLogo} alt="JKCement" className="mx-auto mb-4 h-12 w-auto" />
           <h1 className="font-display text-2xl font-bold text-foreground">
             {isLogin ? "Welcome Back" : "Create Account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isLogin ? "Sign in to your JKCement Video Studio" : "Start your personalized video journey"}
+            {isLogin ? "Sign in to your Video Studio" : "Start your personalized video journey"}
           </p>
         </div>
 
         {/* Form */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-lg shadow-primary/5">
           {/* Google Sign-In */}
           <Button
             type="button"
             variant="outline"
-            className="mb-4 w-full gap-2"
+            className="mb-4 w-full gap-2 rounded-xl"
             onClick={handleGoogleSignIn}
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -92,6 +98,7 @@ const AuthPage = () => {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your full name"
                   required={!isLogin}
+                  className="rounded-xl"
                 />
               </div>
             )}
@@ -103,6 +110,7 @@ const AuthPage = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
+                className="rounded-xl"
               />
             </div>
             <div>
@@ -114,9 +122,10 @@ const AuthPage = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                className="rounded-xl"
               />
             </div>
-            <Button type="submit" variant="hero" className="w-full" size="lg" disabled={loading}>
+            <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-display font-semibold" size="lg" disabled={loading}>
               {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
           </form>
@@ -125,7 +134,7 @@ const AuthPage = () => {
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="font-semibold text-primary hover:underline"
+              className="font-semibold text-secondary hover:underline"
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>

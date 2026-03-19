@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { LayoutDashboard, Upload, Film, User, HelpCircle, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import jkLogo from "@/assets/jkcement_logo.png";
 
 const navItems = [
   { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -19,13 +20,10 @@ const AppSidebar = () => {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary font-display text-sm font-bold text-primary-foreground">
-          JK
-        </div>
-        <div>
-          <p className="font-display text-sm font-bold tracking-wide text-sidebar-foreground">JKCement</p>
-          <p className="text-xs text-sidebar-muted">Video Studio</p>
+      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
+        <img src={jkLogo} alt="JKCement" className="h-8 w-auto" />
+        <div className="ml-1">
+          <p className="text-xs font-medium text-sidebar-muted">Video Studio</p>
         </div>
       </div>
 
@@ -40,8 +38,8 @@ const AppSidebar = () => {
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               }`}
             >
               <Icon className={`h-5 w-5 ${isActive ? "text-primary" : ""}`} />
@@ -55,7 +53,7 @@ const AppSidebar = () => {
       <div className="border-t border-sidebar-border p-3">
         <button
           onClick={() => { logout(); setMobileOpen(false); }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
         >
           <LogOut className="h-5 w-5" />
           Sign Out
@@ -78,14 +76,14 @@ const AppSidebar = () => {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden" onClick={() => setMobileOpen(false)}>
-          <div className="absolute inset-0 bg-foreground/40" />
+          <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" />
           <aside
-            className="relative flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground"
+            className="relative flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-4 rounded-full p-1.5 text-sidebar-foreground/70 hover:text-sidebar-foreground"
+              className="absolute right-3 top-4 rounded-full p-1.5 text-sidebar-foreground/60 hover:text-sidebar-foreground"
             >
               <X className="h-5 w-5" />
             </button>
@@ -95,7 +93,7 @@ const AppSidebar = () => {
       )}
 
       {/* Desktop sidebar */}
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col bg-sidebar text-sidebar-foreground lg:flex">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
         {sidebarContent}
       </aside>
     </>
