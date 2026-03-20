@@ -10,6 +10,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<{ error: string | null }>;
   signup: (name: string, email: string, password: string) => Promise<{ error: string | null }>;
+  verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -22,6 +23,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: async () => ({ error: null }),
   signup: async () => ({ error: null }),
+  verifyOtp: async () => ({ error: null }),
   logout: async () => {},
   refreshProfile: async () => {},
 });
@@ -78,6 +80,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return { error: error?.message ?? null };
   };
 
+  const verifyOtp = async (email: string, token: string) => {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+    return { error: error?.message ?? null };
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
   };
@@ -87,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, isAuthenticated: !!session, loading, login, signup, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, isAuthenticated: !!session, loading, login, signup, verifyOtp, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
