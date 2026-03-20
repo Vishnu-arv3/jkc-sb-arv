@@ -13,6 +13,7 @@ import ProfilePage from "./pages/ProfilePage";
 import HelpPage from "./pages/HelpPage";
 import NotFound from "./pages/NotFound";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import TechnicalSpecificationPage from "./pages/TechnicalSpecificationPage";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
               <Route path="/help" element={<ProtectedRoute><HelpPage /></ProtectedRoute>} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/Technical-Specification-Document" element={<TechnicalSpecificationPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
