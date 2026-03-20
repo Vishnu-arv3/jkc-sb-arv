@@ -1,1 +1,4 @@
 project_id = "kvxrdpwlkcxqcpqmmnqy"
+
+[functions.generate-dream-home]
+verify_jwt = false
