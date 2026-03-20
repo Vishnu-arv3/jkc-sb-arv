@@ -17,7 +17,10 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login, signup } = useAuth();
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
+  const { login, signup, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,6 +72,19 @@ const AuthPage = () => {
     if (error) toast.error("Google sign-in failed. Please try again.");
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await resetPassword(forgotEmail.trim());
+      if (error) { toast.error(error); return; }
+      setForgotSent(true);
+      toast.success("Password reset email sent! Check your inbox.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4">
       {/* Decorative background */}
@@ -84,15 +100,47 @@ const AuthPage = () => {
           <img src={jkLogo} alt="JKCement" className="mx-auto mb-2 h-12 w-auto" />
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Video Studio</p>
           <h1 className="font-display text-2xl font-bold text-foreground">
-            {isLogin ? "Welcome Back" : "Create Account"}
+            {isForgotPassword ? "Reset Password" : isLogin ? "Welcome Back" : "Create Account"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {isLogin ? "Sign in to your Video Studio" : "Start your personalized video journey"}
+            {isForgotPassword ? "Enter your email to receive a reset link" : isLogin ? "Sign in to your Video Studio" : "Start your personalized video journey"}
           </p>
         </div>
 
         {/* Form */}
         <div className="rounded-2xl border border-border bg-card p-6 shadow-lg shadow-primary/5">
+          {/* Forgot Password Form */}
+          {isForgotPassword ? (
+            forgotSent ? (
+              <div className="text-center py-4 space-y-3">
+                <div className="text-4xl">📧</div>
+                <p className="font-semibold text-foreground">Check your email!</p>
+                <p className="text-sm text-muted-foreground">We sent a password reset link to <strong>{forgotEmail}</strong></p>
+                <button type="button" onClick={() => { setIsForgotPassword(false); setForgotSent(false); setForgotEmail(""); }} className="text-sm font-semibold text-secondary hover:underline">Back to Sign In</button>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
+                  <Input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="rounded-xl"
+                  />
+                </div>
+                <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-display font-semibold" size="lg" disabled={loading}>
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </Button>
+                <div className="text-center">
+                  <button type="button" onClick={() => setIsForgotPassword(false)} className="text-sm font-semibold text-secondary hover:underline">Back to Sign In</button>
+                </div>
+              </form>
+            )
+          ) : (
+            <>
           {/* Google Sign-In */}
           <Button
             type="button"
@@ -194,6 +242,18 @@ const AuthPage = () => {
             </Button>
           </form>
 
+          {isLogin && (
+            <div className="mt-2 text-right">
+              <button
+                type="button"
+                onClick={() => { setIsForgotPassword(true); setForgotSent(false); setForgotEmail(""); }}
+                className="text-sm text-muted-foreground hover:text-foreground hover:underline"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
+
           <div className="mt-4 text-center text-sm text-muted-foreground">
             {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
             <button
@@ -204,6 +264,8 @@ const AuthPage = () => {
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
           </div>
+          </>
+          )}
         </div>
       </div>
     </div>
