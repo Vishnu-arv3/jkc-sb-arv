@@ -39,11 +39,11 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await login(email, password);
+        const { error } = await login(email.trim(), password);
         if (error) { toast.error(error); return; }
         navigate("/dashboard");
       } else {
-        const { error } = await signup(name, email, password);
+        const { error } = await signup(name, email.trim(), password);
         if (error) { toast.error(error); return; }
         toast.success("Account created! Enter the 6-digit code sent to your email.");
         setIsVerification(true);
