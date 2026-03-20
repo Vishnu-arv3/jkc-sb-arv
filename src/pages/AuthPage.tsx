@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import jkLogo from "@/assets/jkcement_logo.png";
 
 const AuthPage = () => {
@@ -12,12 +13,27 @@ const AuthPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login, signup } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isLogin) {
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match!");
+        return;
+      }
+      if (password.length < 6) {
+        toast.error("Password must be at least 6 characters long.");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       if (isLogin) {
@@ -119,16 +135,48 @@ const AuthPage = () => {
             </div>
             <div>
               <label className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="rounded-xl"
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                  className="rounded-xl pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
+            {!isLogin && (
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-foreground">Confirm Password</label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required={!isLogin}
+                    minLength={6}
+                    className="rounded-xl pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+            )}
             <Button type="submit" className="w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-display font-semibold" size="lg" disabled={loading}>
               {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
             </Button>
