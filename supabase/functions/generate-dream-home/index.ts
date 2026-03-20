@@ -37,11 +37,60 @@ serve(async (req) => {
       );
     }
 
-    const { config, selfieBase64 } = await req.json();
+    const body = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { sqft, floors, style, views, hasGarden, gardenStyle } = config;
+    // --- Input Validation ---
+    const ALLOWED_STYLES = new Set(["modern", "traditional", "contemporary", "villa"]);
+    const ALLOWED_VIEWS = new Set(["exterior_front", "exterior_aerial", "living_room", "bedroom", "kitchen", "bathroom"]);
+    const ALLOWED_GARDEN_STYLES = new Set(["minimal", "lush", "zen", "rooftop"]);
+
+    const { config, selfieBase64 } = body;
+    if (!config || typeof config !== "object") {
+      return new Response(
+        JSON.stringify({ error: "Invalid config" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const sqft = Number(config.sqft);
+    const floors = Number(config.floors);
+    const style = String(config.style || "");
+    const views = config.views;
+    const hasGarden = config.hasGarden === true;
+    const gardenStyle = String(config.gardenStyle || "");
+
+    if (!Number.isInteger(sqft) || sqft < 500 || sqft > 50000) {
+      return new Response(
+        JSON.stringify({ error: "Invalid sqft value" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!Number.isInteger(floors) || floors < 1 || floors > 10) {
+      return new Response(
+        JSON.stringify({ error: "Invalid floors value" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!ALLOWED_STYLES.has(style)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid style" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (!Array.isArray(views) || views.length === 0 || views.length > 6 || views.some((v: unknown) => typeof v !== "string" || !ALLOWED_VIEWS.has(v as string))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid views" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (hasGarden && !ALLOWED_GARDEN_STYLES.has(gardenStyle)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid garden style" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const styleDescriptions: Record<string, string> = {
       modern: "modern minimalist architecture with clean lines, flat roof, large glass windows, concrete and steel",
