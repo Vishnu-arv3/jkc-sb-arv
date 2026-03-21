@@ -26,25 +26,35 @@ const Dashboard = () => {
       setVideoCount(count ?? 0);
       setRecentVideos(data ?? []);
 
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("has_seen_tutorial")
         .eq("user_id", user.id)
-        .single();
-      if (profileData && !profileData.has_seen_tutorial) {
+        .maybeSingle(); // Use maybeSingle to avoid error if missing
+        
+      if (profileError) {
+        console.warn("Error fetching tutorial status:", profileError);
+      }
+      
+      // Show tutorial if no profile exists yet OR if they haven't seen it
+      if (!profileData || profileData.has_seen_tutorial === false) {
         setShowTutorial(true);
       }
     };
     load();
   }, [user]);
-
+ 
   const dismissTutorial = async () => {
     setShowTutorial(false);
     if (user) {
+      // Use upsert to create profile if it doesn't exist
       await supabase
         .from("profiles")
-        .update({ has_seen_tutorial: true })
-        .eq("user_id", user.id);
+        .upsert({ 
+          user_id: user.id, 
+          has_seen_tutorial: true,
+          display_name: user.user_metadata?.full_name || user.email?.split("@")[0]
+        }, { onConflict: 'user_id' });
     }
   };
 

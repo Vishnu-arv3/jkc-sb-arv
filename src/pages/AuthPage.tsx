@@ -20,7 +20,7 @@ const AuthPage = () => {
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
-  const { login, signup, resetPassword } = useAuth();
+  const { login, signup, resetPassword, bypassAuth } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,20 +40,27 @@ const AuthPage = () => {
     setLoading(true);
     try {
       if (isLogin) {
-        const { error } = await login(email.trim(), password);
-        if (error) { toast.error(error); return; }
+        const { error: loginError } = await login(email.trim(), password);
+        if (loginError) { toast.error(loginError); return; }
         navigate("/dashboard");
       } else {
-        const { error } = await signup(name, email.trim(), password);
-        if (error) {
-          if (error.toLowerCase().includes("rate limit") || error.toLowerCase().includes("too many") || error.toLowerCase().includes("over the email rate limit")) {
+        const { error: signupError } = await signup(name, email.trim(), password);
+        if (signupError) {
+          if (signupError.toLowerCase().includes("rate limit") || signupError.toLowerCase().includes("too many") || signupError.toLowerCase().includes("over the email rate limit")) {
             toast.error("Too many sign-up attempts. Please wait a few minutes and try again.");
           } else {
-            toast.error(error);
+            toast.error(signupError);
           }
           return;
         }
-        toast.success("Account created! Check your email inbox for a confirmation link.");
+        
+        toast.success("Account created! Redirecting to Sign In...");
+        setTimeout(() => {
+          setIsLogin(true);
+          setPassword("");
+          setConfirmPassword("");
+          toast.info("Please check your email to confirm your account before signing in.", { duration: 6000 });
+        }, 1500);
       }
     } finally {
       setLoading(false);
@@ -263,6 +270,21 @@ const AuthPage = () => {
             >
               {isLogin ? "Sign Up" : "Sign In"}
             </button>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border/50">
+            <p className="text-center text-[10px] text-muted-foreground uppercase tracking-widest mb-3">Developer Tools</p>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => { bypassAuth(); navigate("/dashboard"); }}
+              className="w-full rounded-xl border-dashed border-primary/30 text-primary hover:bg-primary/5"
+            >
+              Skip Confirmation (Test Mode)
+            </Button>
+            <p className="mt-2 text-[10px] text-center text-muted-foreground">
+              Bypass email confirmation for testing the workflow.
+            </p>
           </div>
           </>
           )}

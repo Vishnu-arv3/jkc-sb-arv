@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Upload, Film, User, HelpCircle, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Upload, Film, User, HelpCircle, LogOut, Menu, X, FileText, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import jkLogo from "@/assets/jkcement_logo.png";
 
@@ -13,7 +13,7 @@ const navItems = [
 ];
 
 const AppSidebar = () => {
-  const { logout } = useAuth();
+  const { logout, user, profile } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -47,8 +47,20 @@ const AppSidebar = () => {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="border-t border-sidebar-border p-3">
+      {/* User Info & Logout */}
+      <div className="border-t border-sidebar-border p-3 space-y-2">
+        <div className="flex items-center gap-3 px-3 py-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-xs">
+            {(profile?.display_name || user?.email || "U").charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 overflow-hidden">
+            <p className="text-xs font-bold text-sidebar-foreground truncate">
+              {profile?.display_name || user?.user_metadata?.full_name || user?.email?.split("@")[0]}
+            </p>
+            <p className="text-[10px] text-sidebar-muted truncate">{user?.email}</p>
+          </div>
+        </div>
+        
         <button
           onClick={() => { logout(); setMobileOpen(false); }}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-sidebar-foreground/60 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"

@@ -70,30 +70,81 @@ const UploadPage = () => {
       }
     }, 2500);
 
-    const FALLBACK_IMAGES = [
-      { view: "exterior_front", imageUrl: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80" }, // Plot
-      { view: "exterior_aerial", imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&w=1200&q=80" }, // Foundation
-      { view: "living_room", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" }, // Structure
-      { view: "kitchen", imageUrl: "https://images.unsplash.com/photo-1560184897-af75bb70f071?auto=format&fit=crop&w=1200&q=80" }, // Interior
-      { view: "bedroom", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" }, // Final
-    ];
+    const FALLBACK_SETS: Record<string, { view: string; imageUrl: string }[]> = {
+      modern: [
+        { view: "exterior_front", imageUrl: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80" },
+        { view: "exterior_aerial", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" },
+        { view: "living_room", imageUrl: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1200&q=80" },
+        { view: "kitchen", imageUrl: "https://images.unsplash.com/photo-1556910103-1c02745a872f?auto=format&fit=crop&w=1200&q=80" },
+        { view: "bedroom", imageUrl: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1200&q=80" },
+      ],
+      traditional: [
+        { view: "exterior_front", imageUrl: "https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=1200&q=80" },
+        { view: "exterior_aerial", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" },
+        { view: "living_room", imageUrl: "https://images.unsplash.com/photo-1595526114101-10c732924375?auto=format&fit=crop&w=1200&q=80" },
+        { view: "kitchen", imageUrl: "https://images.unsplash.com/photo-1588854337236-6889d631faa8?auto=format&fit=crop&w=1200&q=80" },
+        { view: "bedroom", imageUrl: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1200&q=80" },
+      ],
+      contemporary: [
+        { view: "exterior_front", imageUrl: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80" },
+        { view: "exterior_aerial", imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&w=1200&q=80" },
+        { view: "living_room", imageUrl: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80" },
+        { view: "kitchen", imageUrl: "https://images.unsplash.com/photo-1560184897-af75bb70f071?auto=format&fit=crop&w=1200&q=80" },
+        { view: "bedroom", imageUrl: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80" },
+      ],
+      villa: [
+        { view: "exterior_front", imageUrl: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1200&q=80" },
+        { view: "exterior_aerial", imageUrl: "https://images.unsplash.com/photo-1512915922686-57c11dde9c6b?auto=format&fit=crop&w=1200&q=80" },
+        { view: "living_room", imageUrl: "https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=1200&q=80" },
+        { view: "kitchen", imageUrl: "https://images.unsplash.com/photo-1600566753086-00f18efc2291?auto=format&fit=crop&w=1200&q=80" },
+        { view: "bedroom", imageUrl: "https://images.unsplash.com/photo-1600566752355-35792bedcfea?auto=format&fit=crop&w=1200&q=80" },
+      ]
+    };
+    
+    // Choose dynamic fallback based on selected style
+    const FALLBACK_IMAGES = FALLBACK_SETS[config.style] || FALLBACK_SETS.modern;
 
     try {
-      // 1. Try to save record to DB (Silent fail if table missing)
+      // 1. Try to save record to DB with Config
       let videoId: string | null = null;
       try {
         if (user) {
-          const title = `${config.style.charAt(0).toUpperCase() + config.style.slice(1)} ${config.sqft.toLocaleString()} sq.ft Dream Home`;
-          const { data } = await supabase
+          const baseTitle = `${config.style.charAt(0).toUpperCase() + config.style.slice(1)} ${config.sqft.toLocaleString()} sq.ft Dream Home`;
+          const title = `${baseTitle} || ${JSON.stringify(config)}`;
+          
+          // First attempt: With full config history
+          const { data, error: firstError } = await supabase
             .from("videos")
-            .insert({ user_id: user.id, title, status: "processing" })
+            .insert({ 
+              user_id: user.id, 
+              title, 
+              status: "processing",
+              config: config
+            })
             .select("id")
             .single();
-          videoId = data?.id ?? null;
+            
+          if (firstError) {
+            console.warn("Retrying insert without 'config' column:", firstError.message);
+            // Second attempt: Fallback to basic data if 'config' column is missing or error
+            const { data: fallbackData } = await supabase
+              .from("videos")
+              .insert({ 
+                user_id: user.id, 
+                title, 
+                status: "processing"
+              })
+              .select("id")
+              .single();
+            videoId = fallbackData?.id ?? null;
+          } else {
+            videoId = data?.id ?? null;
+          }
+          
           setGeneratedVideoId(videoId);
         }
       } catch (dbErr) {
-        console.warn("DB 'videos' table might be missing, proceeding in Demo Mode:", dbErr);
+        console.warn("Unexpected DB error, proceeding in Demo Mode:", dbErr);
       }
 
       // 2. Call the edge function
@@ -130,6 +181,24 @@ const UploadPage = () => {
         } catch (updateErr) {
           console.warn("Could not update video record:", updateErr);
         }
+      }
+
+      // 4. LocalStorage Fallback (Guarantees History Works Even If DB Fails)
+      try {
+        const localVideos = JSON.parse(localStorage.getItem("jkc_local_videos") || "[]");
+        const newLocalVideo = {
+          id: videoId || `local-${Date.now()}`,
+          user_id: user?.id || "guest",
+          title: `${config.style.charAt(0).toUpperCase() + config.style.slice(1)} ${config.sqft.toLocaleString()} sq.ft Dream Home || ${JSON.stringify(config)}`,
+          status: "completed",
+          duration: `${finalImages.length * 5}s`,
+          created_at: new Date().toISOString(),
+          visibility: "private"
+        };
+        localVideos.unshift(newLocalVideo);
+        localStorage.setItem("jkc_local_videos", JSON.stringify(localVideos));
+      } catch (localErr) {
+        console.warn("Failed to save to localStorage:", localErr);
       }
 
       // Complete all stages
@@ -222,6 +291,18 @@ const UploadPage = () => {
           {/* Step 1: Upload */}
           {flowStep === "upload" && !preview && !showCamera && (
             <div className="space-y-4">
+              {localStorage.getItem("sb-mock-auth") === "true" && (
+                <Button 
+                  variant="outline" 
+                  className="w-full border-dashed border-primary/50 text-primary py-4"
+                  onClick={() => {
+                    setPreview("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+                  }}
+                >
+                  ✨ Use Demo Image (Test Mode)
+                </Button>
+              )}
+
               <button
                 onClick={() => setShowCamera(true)}
                 className="flex w-full cursor-pointer items-center gap-4 rounded-xl border-2 border-dashed border-border bg-card p-8 text-left transition-colors hover:border-primary/50 hover:bg-muted/50"
