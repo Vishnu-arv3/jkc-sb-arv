@@ -85,41 +85,56 @@ const PitchDeckPage = () => {
 
         {/* Main Content Viewer */}
         <div className="flex-1 w-full bg-card/50 backdrop-blur-sm rounded-[3rem] border border-border/50 shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden relative animate-in zoom-in-95 duration-1000 fill-mode-both">
-          {isLocalhost ? (
-            <div className="h-full w-full flex flex-col items-center justify-center p-12 text-center bg-zinc-950/20 backdrop-blur-md">
-              <div className="max-w-md p-10 rounded-[2.5rem] bg-card/80 border border-border shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-                <div className="w-20 h-20 bg-amber-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-amber-500 animate-pulse">
-                   <Info size={40} />
+          {/* Always try to load the iframe */}
+          <iframe 
+            src={embedUrl} 
+            className="h-full w-full border-0 bg-white"
+            title="Pitch Deck PPTX"
+            frameBorder="0"
+          />
+
+          {/* Overlays for Local Environment or Helpers */}
+          {isLocalhost && (
+            <div className="absolute inset-0 z-40 flex items-center justify-center p-6 sm:p-12 pointer-events-none group-data-[dismissed=true]:hidden">
+              <div className="max-w-lg w-full p-8 sm:p-10 rounded-[2.5rem] bg-card/90 border border-border shadow-2xl backdrop-blur-xl pointer-events-auto animate-in fade-in zoom-in-95 duration-700">
+                <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 animate-pulse">
+                   <Info size={32} />
                 </div>
-                <h2 className="text-2xl font-bold mb-3 text-foreground">Local Environment Detected</h2>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-                  Microsoft's Office Viewer requires a **Public URL** to render PPTX files. Since you are on `localhost`, the external viewer cannot reach your local file.
+                <h2 className="text-xl font-bold mb-3 text-center text-foreground">Cloud Viewer Connectivity</h2>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-6 text-center">
+                  Microsoft's Office Viewer requires a **public internet URL** to display your `.pptx` file.
                 </p>
+                
                 <div className="flex flex-col gap-3">
                   <button 
                     onClick={handleDownload}
-                    className="w-full flex items-center justify-center gap-3 px-8 py-4 bg-primary text-primary-foreground rounded-2xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
+                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
                   >
-                    <FileText size={20} />
-                    Download and Open Locally
+                    <FileText size={18} />
+                    Download to Open Locally
                   </button>
-                  <p className="text-[10px] text-muted-foreground italic">
-                    The viewer will work automatically once the project is deployed to a public URL (Vercel, Netlify, etc.).
-                  </p>
+                  
+                  <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      This viewer will work automatically once your project is deployed to **Vercel** or another public URL.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-border/50 flex justify-center">
+                   <button 
+                     onClick={(e) => (e.currentTarget.closest('.absolute') as HTMLElement).style.display = 'none'}
+                     className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                   >
+                     Dismiss & Try to Load Anyway
+                   </button>
                 </div>
               </div>
             </div>
-          ) : (
-            <iframe 
-              src={embedUrl} 
-              className="h-full w-full border-0 bg-white"
-              title="Pitch Deck PPTX"
-              frameBorder="0"
-            />
           )}
           
           {/* Subtle branding footer inside viewer */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none opacity-30 flex items-center gap-3">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-none opacity-30 flex items-center gap-3 z-30">
             <div className="h-px w-8 bg-muted-foreground" />
             <span className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground">JKCement Strategic Presentation (Office Live)</span>
             <div className="h-px w-8 bg-muted-foreground" />
