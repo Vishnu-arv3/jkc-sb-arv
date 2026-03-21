@@ -85,51 +85,36 @@ const PitchDeckPage = () => {
 
         {/* Main Content Viewer */}
         <div className="flex-1 w-full bg-card/50 backdrop-blur-sm rounded-[3rem] border border-border/50 shadow-[0_40px_100px_rgba(0,0,0,0.4)] overflow-hidden relative animate-in zoom-in-95 duration-1000 fill-mode-both">
-          {/* Always try to load the iframe */}
+          {/* Environment-Aware Viewer: PDF for Local (Offline/No-Tunnel), PPTX for Production */}
           <iframe 
-            src={embedUrl} 
+            src={isLocalhost ? "/Pitch_Deck-Presentation.pdf" : embedUrl} 
             className="h-full w-full border-0 bg-white"
-            title="Pitch Deck PPTX"
-            frameBorder="0"
+            title="Pitch Deck Presentation"
+            allowFullScreen
+            loading="lazy"
           />
 
-          {/* Overlays for Local Environment or Helpers */}
+          {/* Local environment helper overlay (Subtle) */}
           {isLocalhost && (
-            <div className="absolute inset-0 z-40 flex items-center justify-center p-6 sm:p-12 pointer-events-none group-data-[dismissed=true]:hidden">
-              <div className="max-w-lg w-full p-8 sm:p-10 rounded-[2.5rem] bg-card/90 border border-border shadow-2xl backdrop-blur-xl pointer-events-auto animate-in fade-in zoom-in-95 duration-700">
-                <div className="w-16 h-16 bg-amber-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-amber-500 animate-pulse">
-                   <Info size={32} />
-                </div>
-                <h2 className="text-xl font-bold mb-3 text-center text-foreground">Cloud Viewer Connectivity</h2>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6 text-center">
-                  Microsoft's Office Viewer requires a **public internet URL** to display your `.pptx` file.
-                </p>
-                
-                <div className="flex flex-col gap-3">
-                  <button 
-                    onClick={handleDownload}
-                    className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-primary text-primary-foreground rounded-2xl font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-primary/20"
-                  >
-                    <FileText size={18} />
-                    Download to Open Locally
-                  </button>
-                  
-                  <div className="p-4 rounded-xl bg-muted/50 border border-border/50">
-                    <p className="text-[10px] text-muted-foreground leading-tight">
-                      This viewer will work automatically once your project is deployed to **Vercel** or another public URL.
-                    </p>
+            <div className="absolute bottom-12 right-12 z-40 animate-in slide-in-from-bottom-4 duration-1000">
+               <div className="group relative">
+                  <div className="flex items-center gap-3 px-6 py-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 backdrop-blur-xl shadow-2xl">
+                    <div className="w-8 h-8 bg-amber-500/20 rounded-xl flex items-center justify-center text-amber-500">
+                       <Info size={16} />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                       <span className="text-[10px] font-black uppercase tracking-widest text-amber-500">Local Preview Mode</span>
+                       <span className="text-xs font-medium text-foreground/80">Viewing PDF version for localhost stability</span>
+                    </div>
                   </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-border/50 flex justify-center">
-                   <button 
-                     onClick={(e) => (e.currentTarget.closest('.absolute') as HTMLElement).style.display = 'none'}
-                     className="text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
-                   >
-                     Dismiss & Try to Load Anyway
-                   </button>
-                </div>
-              </div>
+                  
+                  {/* Tooltip on hover */}
+                  <div className="absolute bottom-full right-0 mb-4 w-64 p-4 rounded-2xl bg-card border border-border shadow-2xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all pointer-events-none">
+                     <p className="text-[10px] leading-relaxed text-muted-foreground">
+                        Microsoft's Office Viewer requires a public URL. Locally, we've automatically switched to the **PDF fallback** to ensure you can see your presentation. The PPTX viewer will activate once deployed to Vercel.
+                     </p>
+                  </div>
+               </div>
             </div>
           )}
           
