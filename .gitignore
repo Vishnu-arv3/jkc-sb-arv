@@ -23,8 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Large Assets
-Pitch_Deck-Presentation.pdf
-Pitch_Deck-Presentation.pptx
-public/Pitch_Deck-Presentation.pdf
-public/Pitch_Deck-Presentation.pptx
+# Large Assets (Legacy - 100MB+ removed)
+# Pitch_Deck-Presentation.pdf and .pptx are now compressed and tracked.
